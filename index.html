@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>KhareedoBecho — Wholesaler & Buyer Marketplace</title>
+<style>
+  :root{
+    --bg1:#7F7FD5; --bg2:#86A8E7; --bg3:#91EAE4;
+    --accent:#ff6ec7; --accent2:#ffd166; --ok:#2ecc71; --warn:#ff7675; --ink:#1b1e28;
+    --card: rgba(255,255,255,0.14); --glass: rgba(255,255,255,0.26); --border: rgba(255,255,255,0.35);
+    --sky:#6bc9ff; --violet:#a78bfa; --mint:#7ef7d6; --sun:#ffc857; --rose:#ff8fab;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#0f1225}
+  body{
+    background: linear-gradient(135deg,var(--bg1),var(--bg2) 45%, var(--bg3));
+    overflow-x:hidden;
+  }
+  .floating{
+    position:fixed; inset:0; pointer-events:none; z-index:-1;
+  }
+  .blob{position:absolute; width:520px; height:520px; border-radius:50%;
+    filter: blur(80px); opacity:0.35; mix-blend-mode:screen; animation: drift 16s ease-in-out infinite;
+  }
+  .b1{background:radial-gradient(circle at 30% 30%, var(--sky), transparent 60%); top:-120px; left:-140px}
+  .b2{background:radial-gradient(circle at 70% 40%, var(--violet), transparent 60%); top:40%; left:60%}
+  .b3{background:radial-gradient(circle at 50% 70%, var(--rose), transparent 60%); bottom:-140px; right:-140px}
+  @keyframes drift{
+    0%,100%{transform: translateY(0)}
+    50%{transform: translateY(-28px)}
+  }
+
+  header{
+    padding:20px 24px; display:flex; align-items:center; justify-content:space-between;
+    color:white;
+  }
+  .brand{
+    display:flex; gap:12px; align-items:center;
+    font-weight:800; letter-spacing:0.3px;
+  }
+  .logo{
+    width:0px; height:0px; background: conic-gradient(from 45deg, var(--sky), var(--sun), var(--rose), var(--violet), var(--mint), var(--sky));
+    border-radius:12px; box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    position:relative; overflow:hidden;
+  }
+  .logo::after{
+    content:""; position:absolute; inset:8px; border-radius:8px; background:rgba(255,255,255,0.35); filter:blur(6px);
+  }
+  .brand span{font-size:20px}
+  .id-badge{font-size:12px; padding:6px 10px; border:1px solid rgba(255,255,255,0.5); border-radius:999px; background:rgba(255,255,255,0.18)}
+  .id-badge strong{font-weight:700}
+
+  main{max-width:1200px; margin:0 auto; padding:12px 20px 80px}
+  .hero{
+    margin-top:10px;
+    background: linear-gradient(135deg, rgba(255,255,255,0.18), rgba(255,255,255,0.08));
+    border:1px solid var(--border); border-radius:24px; padding:26px;
+    backdrop-filter: blur(10px);
+    display:grid; grid-template-columns: 1.2fr 1fr; gap:20px; align-items:center;
+    color:#09101d;
+  }
+  .hero h1{margin:0 0 10px 0; font-size:36px; color:#041128}
+  .hero p{margin:0 0 20px 0; color:#0c2142}
+  .pill-row{display:flex; gap:12px; flex-wrap:wrap}
+  .pill{
+    padding:10px 14px; border-radius:999px; background:white; border:1px solid #e6eefc; color:#243b6b; font-weight:600;
+    box-shadow:0 6px 14px rgba(20,35,85,0.10);
+  }
+  .cta-row{display:flex; gap:14px; flex-wrap:wrap}
+  .btn{
+    padding:12px 16px; border-radius:12px; border:0; font-weight:700; cursor:pointer; color:white;
+    background: linear-gradient(135deg, var(--accent), var(--sun));
+    box-shadow:0 10px 22px rgba(0,0,0,0.18);
+  }
+  .btn.secondary{background: linear-gradient(135deg, #6a85ff, #00d4ff)}
+  .btn.ghost{background: transparent; color:#0c2142; border:2px dashed rgba(255,255,255,0.5)}
+  .grid{
+    margin-top:22px; display:grid; grid-template-columns: repeat(12, 1fr); gap:16px;
+  }
+  .card{
+    grid-column: span 12;
+    background: linear-gradient(180deg, rgba(255,255,255,0.75), rgba(255,255,255,0.6));
+    border:1px solid rgba(255,255,255,0.7); border-radius:20px; padding:18px;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+  }
+  @media(min-width:900px){
+    .card--half{grid-column: span 6}
+    .card--third{grid-column: span 4}
+  }
+  h3{margin:0 0 12px 0}
+  .row{display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end}
+  label{font-size:13px; color:#2a3450; font-weight:700}
+  input, textarea, select{
+    width:100%; padding:10px 12px; border-radius:12px; border:1px solid #d9e2ff; background:white; outline:none;
+    box-shadow: inset 0 1px 0 rgba(0,0,0,0.02);
+  }
+  .field{flex:1; min-width:200px; display:flex; flex-direction:column; gap:6px}
+  .list{display:grid; gap:12px}
+  .product{
+    display:grid; grid-template-columns: 80px 1fr auto; gap:12px; align-items:center; padding:10px; border:1px dashed #dbe4ff; border-radius:14px; background:white;
+  }
+  .product img{width:80px; height:80px; border-radius:10px; object-fit:cover; background:#eef4ff}
+  .product h4{margin:0; font-size:16px}
+  .muted{font-size:12px; color:#566089}
+  .price{font-weight:800; color:#0d2a66}
+  .actions{display:flex; gap:8px}
+  .tag{padding:4px 8px; border-radius:999px; background:#eef4ff; color:#1c2d6b; font-size:12px; font-weight:700}
+  .rating{display:flex; gap:2px; align-items:center}
+  .star{color:#ffb703}
+  .catalog{display:grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap:16px}
+  .p-card{
+    background:white; border:1px solid #e7edff; border-radius:16px; overflow:hidden; display:flex; flex-direction:column;
+    box-shadow: 0 8px 22px rgba(11,32,77,0.08);
+  }
+  .p-card img{width:100%; height:160px; object-fit:cover; background:#f3f7ff}
+  .p-card .content{padding:12px}
+  .split{display:flex; justify-content:space-between; align-items:center}
+  .details{font-size:12px; color:#2b3d73}
+  .bubble{
+    padding:8px 12px; border-radius:14px; max-width:70%;
+  }
+  .bubble.me{background:#e7f3ff; align-self:flex-end}
+  .bubble.them{background:#fff4ea}
+  .chat{display:flex; flex-direction:column; gap:8px; border:1px solid #f0daff; background:linear-gradient(180deg, #fff7fd, #f6fbff); border-radius:14px; padding:10px; max-height:240px; overflow:auto}
+  .toolbar{display:flex; gap:8px; align-items:center}
+  .sep{height:1px; background:#eaefff; margin:10px 0}
+  .empty{padding:12px; border:1px dashed #e6ecff; background:#fafcff; border-radius:12px; color:#6273a1; font-weight:600}
+
+  .hidden{display:none !important}
+  .center{display:flex; align-items:center; justify-content:center}
+  .right{display:flex; justify-content:flex-end}
+  .tiny{font-size:11px; color:#3a4674}
+  .success{color:var(--ok); font-weight:800}
+  .danger{color:var(--warn); font-weight:800}
+</style>
+</head>
+<body>
+<div class="floating">
+  <div class="blob b1"></div>
+  <div class="blob b2"></div>
+  <div class="blob b3"></div>
+</div>
+
+<header>
+  <div class="brand">
+    <div class="logo"></div>
+     <img alt="Marketplace image" style="width:4%;border-radius:14px;border:1px solid #ffffff22"
+             src="https://ik.imagekit.io/KharidoBecho/WhatsApp%20Image%202025-09-13%20at%2012.24.59_32f4ee91.jpg?updatedAt=1757746749337"/>
+        <div class="space"></div>
+    <span>KhareedoBecho</span>
+    <span class="pill">Vibrant wholesale marketplace</span>
+  </div>
+  <div class="id-badge hidden" id="idBadge">
+    You’re signed in • <strong id="roleBadge"></strong> <span id="ownId"></span>
+  </div>
+</header>
+
+<main>
+  <!-- HERO / HOME -->
+  <section id="home" class="hero">
+    <div>
+      <h1>Shop bold. Sell bright. KhareedoBecho.</h1>
+      <p>Join as a wholesaler or buyer. Add products, request to buy, chat, and build trust with real ratings.</p>
+      <div class="pill-row" style="margin-bottom:12px">
+        <span class="pill">✨ Colorful UI</span>
+        <span class="pill">🧾 Product management</span>
+        <span class="pill">💬 Optional chat</span>
+        <span class="pill">⭐ Ratings & reviews</span>
+      </div>
+      <div class="cta-row">
+        <button class="btn" onclick="goAuth('wholesaler')">Wholesaler — Register/Login</button>
+        <button class="btn secondary" onclick="goAuth('buyer')">Buyer — Register/Login</button>
+        <button class="btn ghost" onclick="seedDemo()">Load demo data</button>
+      </div>
+    </div>
+    <div class="center">
+      <div class="card" style="text-align:center">
+        <h3 style="margin-bottom:6px">Welcome to KhareedoBecho</h3>
+        <p class="tiny">Sky-blue vibes. Vibrant cards. Smooth flows. Every button works.</p>
+        <div class="sep"></div>
+        <div class="row" style="justify-content:center; gap:8px">
+          <span class="tag">Multi-seller</span>
+          <span class="tag">Multi-buyer</span>
+          <span class="tag">Requests</span>
+          <span class="tag">Reviews</span>
+          <span class="tag">Chat</span>
+        </div>
+        <div class="sep"></div>
+        <img alt="Showcase" src="data:image/svg+xml;utf8,<?xml version='1.0'?> 
+        <svg xmlns='http://www.w3.org/2000/svg' width='420' height='160'>
+          <defs><linearGradient id='g' x1='0' x2='1'><stop offset='0' stop-color='%236bc9ff'/><stop offset='1' stop-color='%23ff8fab'/></linearGradient></defs>
+          <rect width='100%' height='100%' rx='16' fill='url(%23g)'/>
+          <g font-family='Verdana' font-size='16' fill='white'>
+            <text x='20' y='40'>KhareedoBecho</text>
+            <text x='20' y='80'>Products • Requests • Ratings • Chat</text>
+          </g>
+        </svg>" style="width:100%; border-radius:12px"/>
+      </div>
+    </div>
+  </section>
+
+  <!-- AUTH -->
+  <section id="auth" class="grid hidden">
+    <div class="card card--half">
+      <h3 id="authTitle">Register</h3>
+      <div id="registerFields">
+        <div class="row">
+          <div class="field"><label>Name</label><input id="regName" placeholder="Your full name"/></div>
+          <div class="field"><label>Address</label><input id="regAddress" placeholder="Business/Home address"/></div>
+        </div>
+        <div class="row">
+          <div class="field"><label>Contact</label><input id="regContact" placeholder="Phone or email"/></div>
+          <div class="field"><label>Password</label><input id="regPassword" type="password" placeholder="Create a password"/></div>
+        </div>
+        <div class="row">
+          <button class="btn" onclick="register()">Create account</button>
+          <button class="btn secondary" onclick="toggleAuthMode()">I already have an account</button>
+          <button class="btn ghost" onclick="goHome()">Back</button>
+        </div>
+        <p class="tiny">A unique ID will be generated for you. Keep it safe to login later.</p>
+      </div>
+      <div id="loginFields" class="hidden">
+        <div class="row">
+          <div class="field"><label>Account ID</label><input id="logId" placeholder="e.g., WHS-1234AB"/></div>
+          <div class="field"><label>Password</label><input id="logPassword" type="password" placeholder="Your password"/></div>
+        </div>
+        <div class="row">
+          <button class="btn" onclick="login()">Login</button>
+          <button class="btn secondary" onclick="toggleAuthMode()">Create a new account</button>
+          <button class="btn ghost" onclick="goHome()">Back</button>
+        </div>
+        <p class="tiny">Your ID stays private. It’s never shown to the other side.</p>
+      </div>
+    </div>
+
+    <div class="card card--half" id="authInfo">
+      <h3>Why join</h3>
+      <ul class="list">
+        <li class="row"><span class="tag">For wholesalers</span><span class="muted">Add and manage products. See buyer requests. Chat. Get ratings.</span></li>
+        <li class="row"><span class="tag">For buyers</span><span class="muted">Browse all products. Request to buy. See seller details. Chat. Rate sellers.</span></li>
+      </ul>
+      <div class="sep"></div>
+      <div class="row">
+        <div class="tiny">Role selected:</div>
+        <div class="tag" id="roleSelected">—</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- WHOLESALER DASHBOARD -->
+  <section id="wholesalerDash" class="grid hidden">
+    <div class="card card--third">
+      <h3>Profile</h3>
+      <div class="list" id="wsProfile"></div>
+      <div class="sep"></div>
+      <button class="btn secondary" onclick="logout()">Logout</button>
+    </div>
+
+    <div class="card card--third">
+      <h3>Your products</h3>
+      <div class="list" id="wsProducts"></div>
+      <div class="sep"></div>
+      <div class="row">
+        <div class="field"><label>Product name</label><input id="pName" placeholder="e.g., Sky Blue Saree"/></div>
+        <div class="field"><label>Price</label><input id="pPrice" type="number" min="0" step="0.01" placeholder="999.00"/></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Image URL (optional)</label><input id="pImg" placeholder="https://..."/></div>
+        <button class="btn" onclick="addProduct()">Add product</button>
+      </div>
+    </div>
+
+    <div class="card card--third">
+      <h3>Buyer requests</h3>
+      <div class="list" id="wsRequests"></div>
+    </div>
+
+    <div class="card card--half">
+      <h3>Chat with buyers</h3>
+      <div class="tiny">Choose a request to chat. Messages are saved locally.</div>
+      <div class="sep"></div>
+      <div class="row">
+        <div class="field"><label>Active conversation</label>
+          <select id="wsChatSelect"></select>
+        </div>
+      </div>
+      <div class="chat" id="wsChat"></div>
+      <div class="toolbar">
+        <input id="wsMsg" placeholder="Type a message to buyer"/>
+        <button class="btn" onclick="sendChat('wholesaler')">Send</button>
+      </div>
+    </div>
+
+    <div class="card card--half">
+      <h3>Your ratings</h3>
+      <div id="wsRatings"></div>
+    </div>
+  </section>
+
+  <!-- BUYER DASHBOARD -->
+  <section id="buyerDash" class="grid hidden">
+    <div class="card card--third">
+      <h3>Profile</h3>
+      <div class="list" id="byProfile"></div>
+      <div class="sep"></div>
+      <button class="btn secondary" onclick="logout()">Logout</button>
+    </div>
+
+    <div class="card card--half">
+      <h3>Marketplace</h3>
+      <div class="row">
+        <div class="field"><label>Search</label><input id="searchBox" placeholder="Search products or sellers..." oninput="renderCatalog()"/></div>
+        <div class="field"><label>Sort by</label>
+          <select id="sortSelect" onchange="renderCatalog()">
+            <option value="latest">Latest</option>
+            <option value="priceLow">Price — Low to High</option>
+            <option value="priceHigh">Price — High to Low</option>
+            <option value="ratingHigh">Seller Rating — High to Low</option>
+          </select>
+        </div>
+      </div>
+      <div id="catalog" class="catalog"></div>
+    </div>
+
+    <div class="card card--third">
+      <h3>Your requests</h3>
+      <div id="byRequests" class="list"></div>
+      <div class="sep"></div>
+      <h3>Chat</h3>
+      <div class="row">
+        <div class="field"><label>Active conversation</label>
+          <select id="byChatSelect"></select>
+        </div>
+      </div>
+      <div class="chat" id="byChat"></div>
+      <div class="toolbar">
+        <input id="byMsg" placeholder="Type a message to wholesaler"/>
+        <button class="btn" onclick="sendChat('buyer')">Send</button>
+      </div>
+      <div class="sep"></div>
+      <h3>Rate wholesalers</h3>
+      <div id="byRatings" class="list"></div>
+    </div>
+  </section>
+</main>
+
+<script>
+/* ===== Data Model in localStorage =====
+  localStorage.kh_users = JSON string:
+  {
+    wholesalers: [{id, role:'wholesaler', name, address, contact, password, createdAt}],
+    buyers: [{id, role:'buyer', name, address, contact, password, createdAt}],
+    products: [{id, ownerId, name, price, img, createdAt}],
+    requests: [{id, productId, wholesalerId, buyerId, status:'pending'|'accepted'|'declined', createdAt}],
+    chats: { [convKey]: [{fromRole, text, ts}] }, where convKey = wholesalerId+'|'+buyerId
+    ratings: [{id, wholesalerId, buyerId, score:1..5, note, createdAt}]
+  }
+*/
+const DB_KEY = 'kh_users';
+const SESSION_KEY = 'kh_session';
+
+function now(){ return Date.now(); }
+function uid(prefix='ID'){
+  const s = Math.random().toString(36).slice(2,6) + Math.random().toString(36).slice(2,6);
+  return (prefix + '-' + s).toUpperCase();
+}
+function money(n){
+  return new Intl.NumberFormat('en-IN', {style:'currency', currency:'INR', maximumFractionDigits:0}).format(Number(n||0));
+}
+function loadDB(){
+  const d = localStorage.getItem(DB_KEY);
+  if(!d){
+    const fresh = {wholesalers:[], buyers:[], products:[], requests:[], chats:{}, ratings:[]};
+    localStorage.setItem(DB_KEY, JSON.stringify(fresh));
+    return fresh;
+  }
+  return JSON.parse(d);
+}
+function saveDB(db){ localStorage.setItem(DB_KEY, JSON.stringify(db)); }
+function setSession(obj){ localStorage.setItem(SESSION_KEY, JSON.stringify(obj)); }
+function getSession(){ const s=localStorage.getItem(SESSION_KEY); return s? JSON.parse(s): null; }
+function clearSession(){ localStorage.removeItem(SESSION_KEY); }
+
+let ROLE = null; // 'wholesaler' | 'buyer'
+
+/* ===== Navigation ===== */
+function goHome(){
+  show('home'); hide('auth','wholesalerDash','buyerDash');
+  document.getElementById('idBadge').classList.add('hidden');
+}
+function goAuth(role){
+  ROLE = role;
+  document.getElementById('roleSelected').textContent = role.toUpperCase();
+  document.getElementById('authTitle').textContent = 'Register as ' + role;
+  document.getElementById('registerFields').classList.remove('hidden');
+  document.getElementById('loginFields').classList.add('hidden');
+  show('auth'); hide('home','wholesalerDash','buyerDash');
+}
+function show(id){ document.getElementById(id).classList.remove('hidden'); }
+function hide(...ids){ ids.forEach(i => document.getElementById(i).classList.add('hidden')); }
+function toggleAuthMode(){
+  const reg = document.getElementById('registerFields');
+  const log = document.getElementById('loginFields');
+  reg.classList.toggle('hidden'); log.classList.toggle('hidden');
+  document.getElementById('authTitle').textContent = reg.classList.contains('hidden') ? 'Login' : 'Register';
+}
+
+/* ===== Auth ===== */
+function register(){
+  const name = val('regName'), address = val('regAddress'), contact = val('regContact'), password = val('regPassword');
+  if(!ROLE){ alert('Select role first'); return; }
+  if(!name || !address || !contact || !password){ alert('Please fill all fields'); return; }
+
+  const db = loadDB();
+  const id = uid(ROLE === 'wholesaler' ? 'WHS' : 'BYR');
+  const user = { id, role:ROLE, name, address, contact, password, createdAt: now() };
+
+  if(ROLE==='wholesaler'){
+    db.wholesalers.push(user);
+  }else{
+    db.buyers.push(user);
+  }
+  saveDB(db);
+  setSession({id, role:ROLE});
+  confetti();
+  enterApp();
+  setTimeout(()=> alert(`Welcome ${name}!\nYour Account ID: ${id}\nKeep it safe for login.`), 100);
+}
+function login(){
+  const id = val('logId').toUpperCase().trim();
+  const password = val('logPassword');
+  if(!ROLE){ alert('Select role first'); return; }
+  const db = loadDB();
+  const user = (ROLE==='wholesaler' ? db.wholesalers : db.buyers).find(u => u.id === id && u.password === password);
+  if(!user){ alert('Invalid ID or password'); return; }
+  setSession({id:user.id, role:ROLE});
+  enterApp();
+}
+function logout(){
+  clearSession(); ROLE=null; goHome();
+}
+
+/* ===== App Enter ===== */
+function enterApp(){
+  const session = getSession(); if(!session){ goHome(); return; }
+  ROLE = session.role;
+  document.getElementById('idBadge').classList.remove('hidden');
+  document.getElementById('roleBadge').textContent = session.role.toUpperCase();
+  document.getElementById('ownId').textContent = '• ID: ' + session.id;
+  if(ROLE==='wholesaler'){ renderWholesaler(); show('wholesalerDash'); hide('home','auth','buyerDash'); }
+  else{ renderBuyer(); show('buyerDash'); hide('home','auth','wholesalerDash'); }
+}
+
+/* ===== Helpers ===== */
+function val(id){ return document.getElementById(id).value; }
+function set(id,v){ document.getElementById(id).innerHTML = v; }
+function imgOrDefault(src){
+  if(!src) return 'https://images.unsplash.com/photo-1491553895911-0055eca6402d?q=80&w=600&auto=format&fit=crop';
+  return src;
+}
+function confetti(){
+  // simple emoji confetti
+  const emojis = ['🎉','✨','🎊','💥','🌈','🪄'];
+  let i=0; const timer=setInterval(()=>{
+    const span=document.createElement('span'); span.textContent=emojis[i%emojis.length];
+    span.style.position='fixed'; span.style.left=Math.random()*100+'vw'; span.style.top='-10px';
+    span.style.fontSize = (16+Math.random()*22)+'px';
+    span.style.transition='transform 1.8s ease, opacity 1.8s ease'; span.style.zIndex=9999;
+    document.body.appendChild(span);
+    setTimeout(()=>{ span.style.transform = 'translateY(100vh) rotate('+(Math.random()*360)+'deg)'; span.style.opacity='0' }, 20);
+    setTimeout(()=> span.remove(), 2000);
+    if(++i>18) clearInterval(timer);
+  },80);
+}
+
+/* ===== Wholesaler UI ===== */
+function renderWholesaler(){
+  const db = loadDB(); const {id} = getSession();
+  const ws = db.wholesalers.find(w => w.id===id);
+  // Profile
+  set('wsProfile', `
+    <div class="row"><div class="field"><label>Name</label><div class="tag">${escape(ws.name)}</div></div>
+    <div class="field"><label>Contact</label><div class="tag">${escape(ws.contact)}</div></div></div>
+    <div class="row"><div class="field"><label>Address</label><div class="empty">${escape(ws.address)}</div></div></div>
+  `);
+
+  // Products
+  const products = db.products.filter(p => p.ownerId===id).sort((a,b)=>b.createdAt-a.createdAt);
+  if(products.length===0){
+    set('wsProducts', `<div class="empty">No products yet. Add your first!</div>`);
+  }else{
+    set('wsProducts', products.map(p => `
+      <div class="product">
+        <img src="${escape(imgOrDefault(p.img))}" alt="">
+        <div>
+          <h4>${escape(p.name)} <span class="price">• ${money(p.price)}</span></h4>
+          <div class="muted tiny">Product ID kept private</div>
+        </div>
+        <div class="actions">
+          <button class="btn secondary" onclick="editProductPrompt('${p.id}')">Edit</button>
+          <button class="btn" style="background:linear-gradient(135deg,#ff5858,#f09819)" onclick="removeProduct('${p.id}')">Remove</button>
+        </div>
+      </div>
+    `).join(''));
+  }
+
+  // Requests for this wholesaler
+  const reqs = db.requests.filter(r => r.wholesalerId===id).sort((a,b)=>b.createdAt-a.createdAt);
+  if(reqs.length===0){
+    set('wsRequests', `<div class="empty">No requests yet.</div>`);
+  }else{
+    set('wsRequests', reqs.map(r=>{
+      const product = db.products.find(p=>p.id===r.productId);
+      const buyer = db.buyers.find(b=>b.id===r.buyerId);
+      return `
+        <div class="product">
+          <img src="${escape(imgOrDefault(product?.img))}" alt="">
+          <div>
+            <h4>${escape(product?.name||'Deleted product')} <span class="price">• ${money(product?.price||0)}</span></h4>
+            <div class="details">Buyer: ${escape(buyer?.name||'Unknown')} • ${escape(buyer?.contact||'—')}</div>
+            <div class="tiny muted">Status: <strong>${r.status}</strong></div>
+          </div>
+          <div class="actions">
+            <button class="btn secondary" onclick="setReqStatus('${r.id}','accepted')">Accept</button>
+            <button class="btn" style="background:linear-gradient(135deg,#ff5858,#f09819)" onclick="setReqStatus('${r.id}','declined')">Decline</button>
+          </div>
+        </div>
+      `;
+    }).join(''));
+  }
+
+  // Chat select based on requests
+  const wsChatSelect = document.getElementById('wsChatSelect');
+  const convs = reqs.map(r => ({ key: convKey(r.wholesalerId, r.buyerId), buyerId:r.buyerId, label: chatLabel(db, r.buyerId)}));
+  const uniqueConvs = Object.values(convs.reduce((acc,c)=>{acc[c.key]=c; return acc;}, {}));
+  wsChatSelect.innerHTML = uniqueConvs.map(c=> `<option value="${c.key}">${escape(c.label)}</option>`).join('');
+  renderChat('wholesaler');
+
+  // Ratings received
+  const ratings = db.ratings.filter(rt=>rt.wholesalerId===id);
+  const avg = ratings.length? (ratings.reduce((s,x)=>s+x.score,0)/ratings.length).toFixed(2): '—';
+  set('wsRatings', `
+    <div class="rating"><span class="star">⭐</span> <strong>${avg}</strong> <span class="tiny muted">(${ratings.length} rating${ratings.length!==1?'s':''})</span></div>
+    <div class="list">${ratings.length? ratings.map(rt=>{
+      const by = db.buyers.find(b=>b.id===rt.buyerId);
+      return `<div class="row"><span class="tag">From: ${escape(by?.name||'Buyer')}</span><span class="tag">Score: ${rt.score}</span><span class="tiny">${escape(rt.note||'')}</span></div>`
+    }).join('') : `<div class="empty">No ratings yet.</div>`}</div>
+  `);
+}
+
+function addProduct(){
+  const name = val('pName').trim(); const price = parseFloat(val('pPrice')); const img = val('pImg').trim();
+  if(!name || isNaN(price)){ alert('Enter product name and price'); return; }
+  const db=loadDB(); const {id} = getSession();
+  db.products.push({id:uid('PRD'), ownerId:id, name, price, img, createdAt:now()});
+  saveDB(db);
+  document.getElementById('pName').value=''; document.getElementById('pPrice').value=''; document.getElementById('pImg').value='';
+  confetti();
+  renderWholesaler();
+}
+function editProductPrompt(pid){
+  const db=loadDB(); const p = db.products.find(x=>x.id===pid); if(!p) return;
+  const newName = prompt('Edit product name:', p.name); if(newName===null) return;
+  const newPrice = prompt('Edit price (INR):', p.price); if(newPrice===null) return;
+  const newImg = prompt('Edit image URL (optional):', p.img||''); if(newImg===null) return;
+  p.name = newName.trim() || p.name;
+  p.price = Number(newPrice)||p.price;
+  p.img = newImg.trim()||'';
+  saveDB(db); renderWholesaler();
+}
+function removeProduct(pid){
+  const db=loadDB();
+  db.products = db.products.filter(p=>p.id!==pid);
+  // Also remove related pending requests
+  db.requests = db.requests.filter(r=>r.productId!==pid);
+  saveDB(db); renderWholesaler();
+}
+function setReqStatus(rid, status){
+  const db=loadDB(); const r = db.requests.find(x=>x.id===rid); if(!r) return;
+  r.status = status; saveDB(db); renderWholesaler();
+}
+
+/* ===== Buyer UI ===== */
+function renderBuyer(){
+  const db = loadDB(); const {id} = getSession();
+  const by = db.buyers.find(b=>b.id===id);
+  set('byProfile', `
+    <div class="row"><div class="field"><label>Name</label><div class="tag">${escape(by.name)}</div></div>
+    <div class="field"><label>Contact</label><div class="tag">${escape(by.contact)}</div></div></div>
+    <div class="row"><div class="field"><label>Address</label><div class="empty">${escape(by.address)}</div></div></div>
+  `);
+  renderCatalog();
+
+  // Your requests
+  const reqs = db.requests.filter(r=>r.buyerId===id).sort((a,b)=>b.createdAt-a.createdAt);
+  if(reqs.length===0){
+    set('byRequests', `<div class="empty">You haven’t requested anything yet.</div>`);
+  }else{
+    set('byRequests', reqs.map(r=>{
+      const product = db.products.find(p=>p.id===r.productId);
+      const ws = db.wholesalers.find(w=>w.id===r.wholesalerId);
+      return `
+        <div class="product">
+          <img src="${escape(imgOrDefault(product?.img))}" alt="">
+          <div>
+            <h4>${escape(product?.name||'Deleted product')} <span class="price">• ${money(product?.price||0)}</span></h4>
+            <div class="details">Wholesaler: ${escape(ws?.name||'Unknown')} • ${escape(ws?.contact||'—')}</div>
+            <div class="tiny muted">Status: <strong>${r.status}</strong></div>
+          </div>
+          <div class="actions">
+            <button class="btn secondary" onclick="openChatFromReq('${ws?.id}','${id}')">Chat</button>
+          </div>
+        </div>
+      `;
+    }).join(''));
+  }
+
+  // Chat select
+  const byChatSelect = document.getElementById('byChatSelect');
+  const convs = reqs.map(r => ({ key: convKey(r.wholesalerId, r.buyerId), wholesalerId:r.wholesalerId, label: chatLabel(db, null, r.wholesalerId)}));
+  const uniqueConvs = Object.values(convs.reduce((acc,c)=>{acc[c.key]=c; return acc;}, {}));
+  byChatSelect.innerHTML = uniqueConvs.map(c=> `<option value="${c.key}">${escape(c.label)}</option>`).join('');
+  renderChat('buyer');
+
+  // Ratings: show wholesalers interacted with
+  const wsIds = [...new Set(reqs.map(r=>r.wholesalerId))];
+  if(wsIds.length===0){
+    document.getElementById('byRatings').innerHTML = `<div class="empty">Make a request to rate a wholesaler.</div>`;
+  }else{
+    document.getElementById('byRatings').innerHTML = wsIds.map(wid=>{
+      const ws = db.wholesalers.find(w=>w.id===wid);
+      const avg = calcAvg(db.ratings.filter(rt=>rt.wholesalerId===wid));
+      const myRating = db.ratings.find(rt=>rt.wholesalerId===wid && rt.buyerId===id);
+      return `
+        <div class="row" style="align-items:center">
+          <div class="field"><label>Wholesaler</label><div class="tag">${escape(ws?.name||'—')}</div></div>
+          <div class="field"><label>Current average</label><div class="rating"><span class="star">⭐</span> <strong>${avg}</strong></div></div>
+          <div class="field"><label>Your rating</label>
+            <select id="rate-${wid}">
+              ${[1,2,3,4,5].map(n=>`<option value="${n}" ${myRating?.score===n?'selected':''}>${n}</option>`).join('')}
+            </select>
+          </div>
+          <div class="field"><label>Note (optional)</label><input id="rateNote-${wid}" value="${escapeAttr(myRating?.note||'')}" placeholder="Short note"/></div>
+          <button class="btn" onclick="submitRating('${wid}')">Submit</button>
+        </div>
+      `;
+    }).join('');
+  }
+}
+
+function renderCatalog(){
+  const db = loadDB(); const {id} = getSession();
+  const q = document.getElementById('searchBox').value.toLowerCase();
+  const sort = document.getElementById('sortSelect').value;
+  let items = db.products.map(p => {
+    const ws = db.wholesalers.find(w=>w.id===p.ownerId);
+    const avg = calcAvg(db.ratings.filter(rt=>rt.wholesalerId===ws?.id));
+    return {p, ws, avg};
+  }).filter(x=>{
+    const s = (x.p.name+' '+(x.ws?.name||'')).toLowerCase();
+    return s.includes(q);
+  });
+
+  if(sort==='priceLow') items.sort((a,b)=>a.p.price-b.p.price);
+  else if(sort==='priceHigh') items.sort((a,b)=>b.p.price-a.p.price);
+  else if(sort==='ratingHigh') items.sort((a,b)=> (b.avg==='—'?0:Number(b.avg)) - (a.avg==='—'?0:Number(a.avg)));
+  else items.sort((a,b)=> b.p.createdAt - a.p.createdAt);
+
+  if(items.length===0){
+    document.getElementById('catalog').innerHTML = `<div class="empty">No products match your search.</div>`;
+    return;
+  }
+
+  document.getElementById('catalog').innerHTML = items.map(({p,ws,avg})=>`
+    <div class="p-card">
+      <img src="${escape(imgOrDefault(p.img))}" alt="">
+      <div class="content">
+        <div class="split">
+          <h4>${escape(p.name)}</h4>
+          <div class="price">${money(p.price)}</div>
+        </div>
+        <div class="split">
+          <div class="rating"><span class="star">⭐</span><strong>${avg}</strong></div>
+          <div class="details">Seller: ${escape(ws?.name||'—')}</div>
+        </div>
+        <div class="tiny">Seller contact: ${escape(ws?.contact||'—')} • Address: ${escape(ws?.address||'—')}</div>
+        <div class="row" style="margin-top:8px">
+          <button class="btn secondary" onclick="requestToBuy('${p.id}')">Request to buy</button>
+          <button class="btn" onclick="previewChat('${ws?.id}')">Chat</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function requestToBuy(productId){
+  const db=loadDB(); const session=getSession(); if(!session||session.role!=='buyer'){ alert('Login as buyer'); return; }
+  const p = db.products.find(x=>x.id===productId); if(!p){ alert('Product unavailable'); return; }
+  db.requests.push({id:uid('REQ'), productId, wholesalerId:p.ownerId, buyerId:session.id, status:'pending', createdAt:now()});
+  saveDB(db); confetti(); renderBuyer();
+}
+
+function submitRating(wholesalerId){
+  const db=loadDB(); const {id} = getSession();
+  const score = Number(document.getElementById('rate-'+wholesalerId).value);
+  const note = document.getElementById('rateNote-'+wholesalerId).value.trim();
+  let r = db.ratings.find(rt=>rt.wholesalerId===wholesalerId && rt.buyerId===id);
+  if(r){ r.score = score; r.note = note; r.createdAt=now(); }
+  else{ db.ratings.push({id:uid('RAT'), wholesalerId, buyerId:id, score, note, createdAt:now()}); }
+  saveDB(db); confetti(); renderBuyer();
+}
+
+/* ===== Chat (optional but implemented) ===== */
+function convKey(wholesalerId, buyerId){ return wholesalerId + '|' + buyerId; }
+function chatLabel(db, buyerId=null, wholesalerId=null){
+  if(buyerId){ const b = db.buyers.find(x=>x.id===buyerId); return 'Buyer: ' + (b?.name||'Unknown'); }
+  if(wholesalerId){ const w = db.wholesalers.find(x=>x.id===wholesalerId); return 'Wholesaler: ' + (w?.name||'Unknown'); }
+  return 'Conversation';
+}
+function renderChat(role){
+  const db = loadDB();
+  const select = document.getElementById(role==='wholesaler' ? 'wsChatSelect' : 'byChatSelect');
+  const box = document.getElementById(role==='wholesaler' ? 'wsChat' : 'byChat');
+  const key = select.value; if(!key){ box.innerHTML = `<div class="empty">Select a conversation.</div>`; return; }
+  const msgs = db.chats[key] || [];
+  box.innerHTML = msgs.map(m=> `<div class="bubble ${m.fromRole===role?'me':'them'}"><span class="tiny">${new Date(m.ts).toLocaleTimeString()}</span><br>${escape(m.text)}</div>`).join('');
+  box.scrollTop = box.scrollHeight;
+}
+function sendChat(role){
+  const db=loadDB();
+  const input = document.getElementById(role==='wholesaler' ? 'wsMsg' : 'byMsg');
+  const select = document.getElementById(role==='wholesaler' ? 'wsChatSelect' : 'byChatSelect');
+  const key = select.value; if(!key){ alert('Select a conversation'); return; }
+  const text = input.value.trim(); if(!text) return;
+  if(!db.chats[key]) db.chats[key]=[];
+  db.chats[key].push({fromRole:role, text, ts:now()});
+  saveDB(db); input.value=''; renderChat(role);
+}
+function openChatFromReq(wsId, byId){
+  const key = convKey(wsId, byId);
+  // set for buyer side
+  const sel = document.getElementById('byChatSelect');
+  if(sel){
+    if(![...sel.options].some(o=>o.value===key)){
+      const db = loadDB();
+      const label = chatLabel(db, null, wsId);
+      const opt = document.createElement('option'); opt.value = key; opt.text = label;
+      sel.appendChild(opt);
+    }
+    sel.value = key; renderChat('buyer');
+  }
+}
+function previewChat(wsId){
+  // buyer hitting "Chat" from catalog
+  const session = getSession(); if(!session || session.role!=='buyer'){ alert('Login as buyer'); return; }
+  openChatFromReq(wsId, session.id);
+}
+
+/* ===== Utilities ===== */
+function calcAvg(arr){
+  if(arr.length===0) return '—';
+  const avg = arr.reduce((s,x)=>s+x.score,0)/arr.length;
+  return avg.toFixed(2);
+}
+function escape(s){ return (s??'').toString().replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])); }
+function escapeAttr(s){ return escape(s).replace(/"/g,'&quot;'); }
+
+/* ===== Demo Seeder ===== */
+function seedDemo(){
+  const db = {wholesalers:[], buyers:[], products:[], requests:[], chats:{}, ratings:[]};
+  const w1 = {id:uid('WHS'), role:'wholesaler', name:'Aarav Textiles', address:'Laxmi Rd, Pune', contact:'+91 90000 11111', password:'1234', createdAt:now()};
+  const w2 = {id:uid('WHS'), role:'wholesaler', name:'SkyBlue Fashions', address:'Camp, Pune', contact:'+91 90000 22222', password:'1234', createdAt:now()};
+  const b1 = {id:uid('BYR'), role:'buyer', name:'Neha Traders', address:'Kothrud, Pune', contact:'+91 98888 11111', password:'1234', createdAt:now()};
+  const b2 = {id:uid('BYR'), role:'buyer', name:'Om Retail', address:'Hinjewadi, Pune', contact:'+91 97777 33333', password:'1234', createdAt:now()};
+  db.wholesalers.push(w1,w2); db.buyers.push(b1,b2);
+  db.products.push(
+    {id:uid('PRD'), ownerId:w1.id, name:'Cotton Saree Sky', price:799, img:'https://images.unsplash.com/photo-1520975922324-9d67a2d4a4dd?q=80&w=900&auto=format&fit=crop', createdAt:now()},
+    {id:uid('PRD'), ownerId:w1.id, name:'Denim Bundle', price:1299, img:'https://images.unsplash.com/photo-1541099649105-f69ad21f3246?q=80&w=900&auto=format&fit=crop', createdAt:now()-20000},
+    {id:uid('PRD'), ownerId:w2.id, name:'Sky Blue Kurti', price:999, img:'https://images.unsplash.com/photo-1544441893-675973e31985?q=80&w=900&auto=format&fit=crop', createdAt:now()-40000}
+  );
+  db.requests.push(
+    {id:uid('REQ'), productId:db.products[0].id, wholesalerId:w1.id, buyerId:b1.id, status:'pending', createdAt:now()},
+    {id:uid('REQ'), productId:db.products[2].id, wholesalerId:w2.id, buyerId:b1.id, status:'accepted', createdAt:now()-10000}
+  );
+  db.ratings.push(
+    {id:uid('RAT'), wholesalerId:w1.id, buyerId:b1.id, score:5, note:'Great quality!', createdAt:now()-5000},
+    {id:uid('RAT'), wholesalerId:w2.id, buyerId:b2.id, score:4, note:'Fast response', createdAt:now()-4000}
+  );
+  db.chats[convKey(w1.id,b1.id)] = [
+    {fromRole:'buyer', text:'Hello! Interested in Cotton Saree Sky.', ts:now()-30000},
+    {fromRole:'wholesaler', text:'Hi Neha! We have 50 pcs available.', ts:now()-25000}
+  ];
+  saveDB(db);
+  alert('Demo data loaded.\nLogin as:\nWholesaler: '+w1.id+' / 1234\nBuyer: '+b1.id+' / 1234');
+}
+
+/* ===== Boot ===== */
+(function init(){
+  const s = getSession();
+  if(s){ enterApp(); } else { goHome(); }
+})();
+</script>
+</body>
+</html>
